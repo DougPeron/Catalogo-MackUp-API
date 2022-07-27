@@ -2,9 +2,8 @@ let filterBrand = [];
 let FilterType = [];
 const brand = document.getElementById("filterbrands");
 const type = document.getElementById("filterbrands");
-brand.addEventListener("change", evento);
 let selectedSort = document.getElementById("sort-type");
-let arrayBrand = [];
+
 
 //load inicial todos os produtos.
 
@@ -14,7 +13,7 @@ async function init() {
     listBrands(),
     listType(),
   ]);
-  renderFilterBrand();
+  renderBrandSelect();
   //renderFilterType();
   let allProduct = renderProducts(product);
   document.getElementById("app").innerHTML = allProduct;
@@ -45,19 +44,24 @@ async function addListBrand() {
   let brandProduct = renderProducts(product);
   document.getElementById("app").innerHTML = brandProduct;
 }
-var uniqueArr = [...new Set(filterBrand.brand)];
 //
-function renderFilterBrand() {
-  var uniqueArr = [...new Set(filterBrand.brand)];
-  for (const brands of uniqueArr) {
-    const option = document.createElement("option");
-    option.textContent = brands.brand;
-    option.setAttribute("value", brand);
-    option.value = brands.id;
-    brand.appendChild(option);
+
+//
+function renderBrandSelect() {
+  for (let brands of filterBrand) {
+    let strBrands = brands.brand;
   }
-  //const filteredArray = option.filter((ele, pos) => option.indexOf(ele) == pos);
-  //console.log(filteredArray);
+  var uniqueArray = strBrands.filter((x, i) => strBrands.indexOf(x) === i);
+  let cont = 0
+  for (let brands of uniqueArray) {
+    const option = document.createElement("option");
+    option.textContent = brands;
+    option.setAttribute("value", brands);
+    cont = cont + 1
+    option.value = cont;
+    brands.appendChild(option);
+  }
+  brand.addEventListener("change", evento);
 }
 //
 function evento() {
