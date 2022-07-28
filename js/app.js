@@ -1,9 +1,8 @@
 let filterBrand = [];
-let FilterType = [];
+let filterType = [];
 const brand = document.getElementById("filterbrands");
-const type = document.getElementById("filterbrands");
+const type = document.getElementById("filtertypes");
 let selectedSort = document.getElementById("sort-type");
-
 
 //load inicial todos os produtos.
 
@@ -13,8 +12,8 @@ async function init() {
     listBrands(),
     listType(),
   ]);
-  renderBrandSelect();
-  //renderFilterType();
+  renderFilterBrand();
+  renderFilterType();
   let allProduct = renderProducts(product);
   document.getElementById("app").innerHTML = allProduct;
 }
@@ -45,59 +44,49 @@ async function addListBrand() {
   document.getElementById("app").innerHTML = brandProduct;
 }
 //
-
-//
-function renderBrandSelect() {
+function renderFilterBrand() {
+  let array = [];
   for (let brands of filterBrand) {
-    let strBrands = brands.brand;
+    array.push(brands.brand);
   }
-  var uniqueArray = strBrands.filter((x, i) => strBrands.indexOf(x) === i);
-  let cont = 0
-  for (let brands of uniqueArray) {
+  const filteredArray = array.filter((ele, pos) => array.indexOf(ele) == pos);
+  let cont = 0;
+  for (const brands of filteredArray) {
     const option = document.createElement("option");
     option.textContent = brands;
-    option.setAttribute("value", brands);
-    cont = cont + 1
+    option.setAttribute("value", brand);
+    cont = cont + 1;
     option.value = cont;
-    brands.appendChild(option);
+    brand.appendChild(option);
   }
+  //
   brand.addEventListener("change", evento);
 }
 //
+function renderFilterType() {
+  let array = [];
+  for (let types of filterType) {
+    array.push(types.product_type);
+  }
+  console.log(array);
+  const filteredArray = array.filter((ele, pos) => array.indexOf(ele) == pos);
+  let cont = 0;
+  for (const types of filteredArray) {
+    const option = document.createElement("option");
+    option.textContent = types;
+    option.setAttribute("value", type);
+    cont = cont + 1;
+    option.value = cont;
+    type.appendChild(option);
+  }
+  //
+  type.addEventListener("change", evento);
+}
+
 function evento() {
   var e = document.getElementById("filterbrands");
   var values = e.value;
   alert(values);
-}
-
-//
-function renderFilterType() {
-  for (const type of filterType) {
-    const option = document.createElement("option");
-    option.textContent = type.name;
-    option.setAttribute("value", type);
-    option.value = type.id;
-    type.appendChild(option);
-  }
-}
-
-function clearFilter() {
-  document.getElementById("app").innerHTML = "";
-}
-
-//EXEMPLO DO CÓDIGO PARA UM PRODUTO
-function productItem(product) {
-  const item = `<div class="product" data-name="NYX Mosaic Powder Blush Paradise" data-brand="nyx" data-type="bronzer" tabindex="508">
-  <figure class="product-figure">
-    <img src="https://d3t32hsnjxo7q6.cloudfront.net/i/deedb7bd74bda43f062a09aab2ee1ec8_ra,w158,h184_pa,w158,h184.png" width="215" height="215" alt="NYX Mosaic Powder Blush Paradise" onerror="javascript:this.src='img/unavailable.png'">
-  </figure>
-  <section class="product-description">
-    <h1 class="product-name">NYX Mosaic Powder Blush Paradise</h1>
-    <div class="product-brands"><span class="product-brand background-brand">Nyx</span>
-<span class="product-brand background-price">R$ 57.70</span></div>
-  </section>
-  // CARREGAR OS DETALHES
-</div>`;
 }
 
 //EXEMPLO DO CÓDIGO PARA OS DETALHES DE UM PRODUTO
@@ -105,27 +94,28 @@ function loadDetails(product) {
   let details = `<section class="product-details"><div class="details-row">
         <div>Brand</div>
         <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">nyx</div>
+          <div class="details-bar-bg" style="width= 250">${product.brand}</div>
         </div>
       </div><div class="details-row">
         <div>Price</div>
         <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">10.49</div>
+          <div class="details-bar-bg" style="width= 250">${product.price}</div>
         </div>
       </div><div class="details-row">
         <div>Rating</div>
         <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">5</div>
+          <div class="details-bar-bg" style="width= 250">${product.rating}</div>
         </div>
       </div><div class="details-row">
         <div>Category</div>
         <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250"></div>
+          <div class="details-bar-bg" style="width= 250">${product.description}</div>
         </div>
       </div><div class="details-row">
         <div>Product_type</div>
         <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">bronzer</div>
+          <div class="details-bar-bg" style="width= 250">${product.product_type}</div>
         </div>
       </div></section>`;
+  return `${details.join("")}`;
 }
