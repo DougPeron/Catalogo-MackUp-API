@@ -50,17 +50,15 @@ function renderFilterBrand() {
     array.push(brands.brand);
   }
   const filteredArray = array.filter((ele, pos) => array.indexOf(ele) == pos);
-  let cont = 0;
   for (const brands of filteredArray) {
     const option = document.createElement("option");
     option.textContent = brands;
     option.setAttribute("value", brand);
-    cont = cont + 1;
-    option.value = cont;
+    option.value = brands;
     brand.appendChild(option);
   }
   //
-  brand.addEventListener("change", evento);
+  brand.addEventListener("change", viewFilterBrand);
 }
 //
 function renderFilterType() {
@@ -68,27 +66,45 @@ function renderFilterType() {
   for (let types of filterType) {
     array.push(types.product_type);
   }
-  console.log(array);
   const filteredArray = array.filter((ele, pos) => array.indexOf(ele) == pos);
-  let cont = 0;
   for (const types of filteredArray) {
     const option = document.createElement("option");
     option.textContent = types;
     option.setAttribute("value", type);
-    cont = cont + 1;
-    option.value = cont;
+    option.value = types;
     type.appendChild(option);
   }
   //
-  type.addEventListener("change", evento);
+  type.addEventListener("change", viewFilterType);
 }
 
-function evento() {
+function viewFilterBrand() {
   var e = document.getElementById("filterbrands");
   var values = e.value;
-  alert(values);
+  let filteredBrand = [];
+  for (let filter of filterType) {
+    if (filter.brand == values) {
+      filteredBrand.push(filter);
+    }
+  }
+  document.getElementById("app").innerHTML = "";
+  let render = renderProducts(filteredBrand);
+  document.getElementById("app").innerHTML = render;
 }
-
+//
+function viewFilterType() {
+  var e = document.getElementById("filtertypes");
+  var values = e.value;
+  let filteredType = [];
+  for (let filter of filterType) {
+    if (filter.product_type == values) {
+      filteredType.push(filter);
+    }
+  }
+  document.getElementById("app").innerHTML = "";
+  let render = renderProducts(filteredType);
+  document.getElementById("app").innerHTML = render;
+}
 //EXEMPLO DO CÓDIGO PARA OS DETALHES DE UM PRODUTO
 function loadDetails(product) {
   let details = `<section class="product-details"><div class="details-row">
