@@ -1,68 +1,70 @@
-let filterBrand = document.getElementById("filterbrands");
-let filterType = document.getElementById("filtertypes");
+let filterBrand = document.getElementById("filter-brand");
+let filterType = document.getElementById("filter-type");
 let filterName = document.getElementById("filter-name");
 let filterSort = document.getElementById("sort-type");
 
-(async () => {
+!(async () => {
   let response = await fetch("data/products.json");
 
   loadProducts(await response.json(), filterSort.value);
 })();
 
 let productElement = document.querySelector(".catalog");
-let productBrand = [];
-let productType = [];
+let productBrands = [];
+let productTypes = [];
 let products = "";
 let elementProducts = "";
 
 function loadProducts(json, sortType) {
   let view = sortProducts(json, sortType)
-    .map((p) => renderProducts(p))
+    .map((p) => productItem(p))
     .join("");
 
   productElement.innerHTML = view;
+
   elementProducts = Array.from(document.querySelectorAll(".product"));
 
-  loadSelect(filterBrand, productBrand.uniq().sort());
-  loadDetails(filterType, productType.uniq().sort());
+  loadCombo(filterBrand, productBrands.uniq().sort());
+  loadCombo(filterType, productTypes.uniq().sort());
   products = json;
 }
 
-function loadSelect(select, data) {
+function loadCombo(combo, data) {
   data.map((opt) =>
-    select.insertAdjacentHTML("beforeend", `<option>${opt}</option>`)
+    combo.insertAdjacentHTML("beforeend", `<option>${opt}</option>`)
   );
 }
 
-//retorna produtos passados como parametro.
-function renderProducts(product) {
-  productBrand = productBrand.concat([product.brand]);
-  productType = productType.concat([product.product_type]);
+function productItem(product) {
+  productBrands = productBrands.concat([product.brand]);
+  productTypes = productTypes.concat([product.product_type]);
 
-  return `<div class="product" ${product.name} ${product.brand} data-type="${
-    product.product_type
-  }" tabindex="${product.id}">
-    <figure class="product-figure">
-      <img src="${product.image_link}" width="215" height="215" alt="${
+  return `<div class="product" data-name="${product.name}" data-brand="${
+    product.brand
+  }" data-type="${product.product_type}" tabindex="${product.id}">
+  <figure class="product-figure">
+    <img src="${product.image_link}" width="215" height="215" alt="${
     product.name
   }" onerror="javascript:this.src='img/unavailable.png'">
-    </figure>
-    <section class="product-description">
-      <h1 class="product-name">${product.name}</h1>
-      <div class="product-brands"><span class="product-brand background-brand">${
-        product.brand
-      }</span>
-  <span class="product-brand background-price">${parseFloat(
+  </figure>
+  <section class="product-description">
+    <h1 class="product-name">${product.name}</h1>
+    <div class="product-brands"><span class="product-brand background-brand">${
+      product.brand
+    }</span>
+<span class="product-brand background-price">R$ ${parseFloat(
     product.price * 5.5
   ).toFixed(2)}</span></div>
-    </section>  
-    <section class="product-details">
-    ${loadDetails(product)}
-    </section>
-  </div>`;
+  </section>
+  <section class="product-details">
+  ${loadDetails(product)}
+  </section>
+</div>`;
 }
+
 function loadDetails(product) {
   let details = ["price", "brand", "category", "rating", "product_type"];
+
   return Object.entries(product)
     .filter(([name, value]) => details.includes(name))
     .map(
@@ -70,18 +72,18 @@ function loadDetails(product) {
         `<div class="details-row">
         <div>${name}</div>
         <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">${(name = "price"
-            ? parseFloat(value * 5.5).toFixed(2)
-            : value)}</div>
+          <div class="details-bar-bg" style="width= 250">${
+            name === "price" ? parseFloat(value * 5.5).toFixed(2) : value
+          }</div>
         </div>
       </div>`
     )
     .join("");
 }
-//
+
 function sortProducts(products, sortType) {
   switch (sortType) {
-    case "Melhor Avaliados":
+    case "Melhores Avaliados":
       return products.sort((a, b) =>
         parseFloat(a.rating) > parseFloat(b.rating)
           ? -1
@@ -89,6 +91,7 @@ function sortProducts(products, sortType) {
           ? 1
           : 0
       );
+
     case "Menores Preços":
       return products.sort((a, b) =>
         parseFloat(a.price) > parseFloat(b.price)
@@ -129,8 +132,8 @@ function loadFilter() {
   const type = filterType.value;
   const brand = filterBrand.value;
 
-  elementProducts.array.forEach((product) => {
-    if (valdateProduct(product, name, type, brand)) {
+  elementProducts.forEach((product) => {
+    if (validateProduct(product, name, type, brand)) {
       product.style.display = "block";
     } else {
       product.style.display = "none";
@@ -138,7 +141,7 @@ function loadFilter() {
   });
 }
 
-function ValiditeProduct(product, name, type, brand) {
+function validateProduct(product, name, type, brand) {
   const search = new RegExp(name, "i");
 
   const checkName = search.test(product.dataset.name);
