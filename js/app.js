@@ -1,137 +1,161 @@
-let filterBrand = [];
-let filterType = [];
-const brand = document.getElementById("filterbrands");
-const type = document.getElementById("filtertypes");
-let selectedSort = document.getElementById("sort-type");
+let filterBrand = document.getElementById("filterbrands");
+let filterType = document.getElementById("filtertypes");
+let filterName = document.getElementById("filter-name");
+let filterSort = document.getElementById("sort-type");
 
-//load inicial todos os produtos.
+(async () => {
+  let response = await fetch("data/products.json");
 
-async function init() {
-  [product, filterBrand, filterType] = await Promise.all([
-    listAllProducts(),
-    listBrands(),
-    listType(),
-  ]);
-  renderFilterBrand();
-  renderFilterType();
-  let allProduct = renderProducts(product);
-  document.getElementById("app").innerHTML = allProduct;
+  loadProducts(await response.json(), filterSort.value);
+})();
+
+let productElement = document.querySelector(".catalog");
+let productBrand = [];
+let productType = [];
+let products = "";
+let elementProducts = "";
+
+function loadProducts(json, sortType) {
+  let view = sortProducts(json, sortType)
+    .map((p) => renderProducts(p))
+    .join("");
+
+  productElement.innerHTML = view;
+  elementProducts = Array.from(document.querySelectorAll(".product"));
+
+  loadSelect(filterBrand, productBrand.uniq().sort());
+  loadDetails(filterType, productType.uniq().sort());
+  products = json;
 }
-init();
+
+function loadSelect(select, data) {
+  data.map((opt) =>
+    select.insertAdjacentHTML("beforeend", `<option>${opt}</option>`)
+  );
+}
+
 //retorna produtos passados como parametro.
 function renderProducts(product) {
-  let rows = product.map((product) => {
-    return `<div class="product" ${product.name} ${product.brand} data-type="bronzer" tabindex="508">
+  productBrand = productBrand.concat([product.brand]);
+  productType = productType.concat([product.product_type]);
+
+  return `<div class="product" ${product.name} ${product.brand} data-type="${
+    product.product_type
+  }" tabindex="${product.id}">
     <figure class="product-figure">
-      <img src="${product.image_link}" width="215" height="215" alt="${product.name}" onerror="javascript:this.src='img/unavailable.png'">
+      <img src="${product.image_link}" width="215" height="215" alt="${
+    product.name
+  }" onerror="javascript:this.src='img/unavailable.png'">
     </figure>
     <section class="product-description">
       <h1 class="product-name">${product.name}</h1>
-      <div class="product-brands"><span class="product-brand background-brand">${product.brand}</span>
-  <span class="product-brand background-price">${product.price}</span></div>
+      <div class="product-brands"><span class="product-brand background-brand">${
+        product.brand
+      }</span>
+  <span class="product-brand background-price">${parseFloat(
+    product.price * 5.5
+  ).toFixed(2)}</span></div>
     </section>  
+    <section class="product-details">
+    ${loadDetails(product)}
+    </section>
   </div>`;
-  });
-  return `${rows.join("")}`;
+}
+function loadDetails(product) {
+  let details = ["price", "brand", "category", "rating", "product_type"];
+  return Object.entries(product)
+    .filter(([name, value]) => details.includes(name))
+    .map(
+      ([name, value]) =>
+        `<div class="details-row">
+        <div>${name}</div>
+        <div class="details-bar">
+          <div class="details-bar-bg" style="width= 250">${(name = "price"
+            ? parseFloat(value * 5.5).toFixed(2)
+            : value)}</div>
+        </div>
+      </div>`
+    )
+    .join("");
 }
 //
-//organiza por marca
-async function addListBrand() {
-  clearFilter();
-  [product] = await Promise.all([listBrands()]);
-  renderFilterBrand();
-  let brandProduct = renderProducts(product);
-  document.getElementById("app").innerHTML = brandProduct;
-}
-//
-function renderFilterBrand() {
-  let array = [];
-  for (let brands of filterBrand) {
-    array.push(brands.brand);
+function sortProducts(products, sortType) {
+  switch (sortType) {
+    case "Melhor Avaliados":
+      return products.sort((a, b) =>
+        parseFloat(a.rating) > parseFloat(b.rating)
+          ? -1
+          : parseFloat(a.rating) < parseFloat(b.rating)
+          ? 1
+          : 0
+      );
+    case "Menores Preços":
+      return products.sort((a, b) =>
+        parseFloat(a.price) > parseFloat(b.price)
+          ? 1
+          : parseFloat(a.price) < parseFloat(b.price)
+          ? -1
+          : 0
+      );
+    case "Maiores Preços":
+      return products.sort((a, b) =>
+        parseFloat(a.price) > parseFloat(b.price)
+          ? -1
+          : parseFloat(a.price) < parseFloat(b.price)
+          ? 1
+          : 0
+      );
+    case "A-Z":
+      return products.sort((a, b) =>
+        a.name > b.name ? 1 : a.name < b.name ? -1 : 0
+      );
+    case "Z-A":
+      return products.sort((a, b) =>
+        a.name > b.name ? -1 : a.name < b.name ? 1 : 0
+      );
   }
-  const filteredArray = array.filter((ele, pos) => array.indexOf(ele) == pos);
-  for (const brands of filteredArray) {
-    const option = document.createElement("option");
-    option.textContent = brands;
-    option.setAttribute("value", brand);
-    option.value = brands;
-    brand.appendChild(option);
-  }
-  //
-  brand.addEventListener("change", viewFilterBrand);
-}
-//
-function renderFilterType() {
-  let array = [];
-  for (let types of filterType) {
-    array.push(types.product_type);
-  }
-  const filteredArray = array.filter((ele, pos) => array.indexOf(ele) == pos);
-  for (const types of filteredArray) {
-    const option = document.createElement("option");
-    option.textContent = types;
-    option.setAttribute("value", type);
-    option.value = types;
-    type.appendChild(option);
-  }
-  //
-  type.addEventListener("change", viewFilterType);
 }
 
-function viewFilterBrand() {
-  var e = document.getElementById("filterbrands");
-  var values = e.value;
-  let filteredBrand = [];
-  for (let filter of filterType) {
-    if (filter.brand == values) {
-      filteredBrand.push(filter);
+filterBrand.addEventListener("change", loadFilter);
+filterType.addEventListener("change", loadFilter);
+filterName.addEventListener("keyup", loadFilter);
+filterSort.addEventListener("change", (e) => {
+  loadProducts(products, filterSort.value);
+  loadFilter();
+});
+
+function loadFilter() {
+  const name = filterName.value;
+  const type = filterType.value;
+  const brand = filterBrand.value;
+
+  elementProducts.array.forEach((product) => {
+    if (valdateProduct(product, name, type, brand)) {
+      product.style.display = "block";
+    } else {
+      product.style.display = "none";
     }
-  }
-  document.getElementById("app").innerHTML = "";
-  let render = renderProducts(filteredBrand);
-  document.getElementById("app").innerHTML = render;
+  });
 }
-//
-function viewFilterType() {
-  var e = document.getElementById("filtertypes");
-  var values = e.value;
-  let filteredType = [];
-  for (let filter of filterType) {
-    if (filter.product_type == values) {
-      filteredType.push(filter);
-    }
-  }
-  document.getElementById("app").innerHTML = "";
-  let render = renderProducts(filteredType);
-  document.getElementById("app").innerHTML = render;
+
+function ValiditeProduct(product, name, type, brand) {
+  const search = new RegExp(name, "i");
+
+  const checkName = search.test(product.dataset.name);
+
+  const checkType = product.dataset.type.includes(type);
+
+  const checkBrand = product.dataset.brand.includes(brand);
+
+  return checkName && checkType && checkBrand;
 }
-//EXEMPLO DO CÓDIGO PARA OS DETALHES DE UM PRODUTO
-function loadDetails(product) {
-  let details = `<section class="product-details"><div class="details-row">
-        <div>Brand</div>
-        <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">${product.brand}</div>
-        </div>
-      </div><div class="details-row">
-        <div>Price</div>
-        <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">${product.price}</div>
-        </div>
-      </div><div class="details-row">
-        <div>Rating</div>
-        <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">${product.rating}</div>
-        </div>
-      </div><div class="details-row">
-        <div>Category</div>
-        <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">${product.description}</div>
-        </div>
-      </div><div class="details-row">
-        <div>Product_type</div>
-        <div class="details-bar">
-          <div class="details-bar-bg" style="width= 250">${product.product_type}</div>
-        </div>
-      </div></section>`;
-  return `${details.join("")}`;
-}
+
+Array.prototype.uniq = function () {
+  return this.filter(function (value, index, self) {
+    return self.indexOf(value) === index;
+  });
+};
+
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
